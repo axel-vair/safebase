@@ -27,19 +27,14 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www/safebase
 
 # Copier composer.json et composer.lock (si disponible) dans le conteneur
-COPY composer.json /var/www/safebase/
-COPY composer.lock /var/www/safebase/
-COPY apache.conf /etc/apache2/sites-available/000-default.conf
-
-# Vérifier la version de PHP et Composer
-RUN php -v && composer --version
-
-# Installer les dépendances PHP via Composer
+COPY composer.json composer.lock ./
 RUN composer install --prefer-dist --no-autoloader --no-progress --no-interaction --no-scripts --no-cache
 
-# Changer l'utilisateur www-data pour avoir les permissions correctes
-RUN usermod -u 1000 www-data
-RUN chown -R www-data:www-data /var/www/safebase/
+COPY . .
+
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
+
+RUN chown -R www-data:www-data /var/www/safebase
 
 # Passer à l'utilisateur www-data pour exécuter Apache
 USER www-data
@@ -49,4 +44,3 @@ EXPOSE 80
 
 # Commande par défaut pour démarrer Apache en mode avant-plan
 CMD ["apache2-foreground"]
-
