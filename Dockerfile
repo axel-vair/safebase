@@ -23,6 +23,9 @@ RUN docker-php-ext-configure intl && docker-php-ext-install pdo pdo_pgsql intl
 # Installation de Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Générer les fichiers CSS via Tailwind (utilisation de Symfony)
+RUN php bin/console tailwind:build
+
 # Définir le répertoire de travail
 WORKDIR /var/www/safebase
 
