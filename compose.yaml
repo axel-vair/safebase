@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   database:
     image: postgres:15.8
@@ -34,6 +36,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      APP_ENV: dev
       POTTER_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
       BACKUP_DATABASE_URL: postgresql://${BACKUP_USER}:${BACKUP_PASSWORD}@backup:5432/${BACKUP_DB}
     ports:
@@ -43,6 +46,25 @@ services:
       - backup
     volumes:
       - shared-data:/var/www/var/dump
+
+  init-db:
+    image: safebase-apache:latest
+    depends_on:
+      - database
+      - backup
+    environment:
+      APP_ENV: dev
+      POTTER_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      BACKUP_DATABASE_URL: postgresql://${BACKUP_USER}:${BACKUP_PASSWORD}@backup:5432/${BACKUP_DB}
+    entrypoint: >
+      sh -c "
+        echo '⏳ Attente des bases de données...' &&
+        sleep 5 &&
+        php bin/console doctrine:database:create --if-not-exists --connection=default &&
+        php bin/console doctrine:database:create --if-not-exists --connection=backup &&
+        php bin/console doctrine:migrations:migrate --no-interaction &&
+        php bin/console doctrine:fixtures:load --no-interaction
+      "
 
 volumes:
   shared-data:
