@@ -51,7 +51,6 @@ services:
     image: safebase-apache:latest
     depends_on:
       - database
-      - backup
     environment:
       APP_ENV: dev
       POTTER_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
