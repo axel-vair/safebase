@@ -9,6 +9,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-user}
     ports:
       - '5460:5432'
+    networks:
+      - mynetwork
     volumes:
       - shared-data:/var/www/var/dump
 
@@ -20,14 +22,10 @@ services:
       POSTGRES_USER: ${BACKUP_USER:-user}
     ports:
       - '5459:5432'
+    networks:
+      - mynetwork
     volumes:
       - shared-data:/var/www/var/dump
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - '29080:8080'
 
   apache-php:
     image: safebase-apache:latest
@@ -44,6 +42,8 @@ services:
     depends_on:
       - database
       - backup
+    networks:
+      - mynetwork
     volumes:
       - shared-data:/var/www/var/dump
 
@@ -55,6 +55,8 @@ services:
       APP_ENV: dev
       POTTER_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
       BACKUP_DATABASE_URL: postgresql://${BACKUP_USER}:${BACKUP_PASSWORD}@backup:5432/${BACKUP_DB}
+    networks:
+      - mynetwork
     entrypoint: >
       sh -c "
         echo '⏳ Attente que la base de données soit prête...' &&
@@ -66,3 +68,7 @@ services:
 
 volumes:
   shared-data:
+
+networks:
+  mynetwork:
+    driver: bridge
