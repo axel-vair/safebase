@@ -26,14 +26,16 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Définir le répertoire de travail
 WORKDIR /var/www/safebase
 
-# Copier composer.json et composer.lock (si disponible) dans le conteneur
-COPY composer.json composer.lock ./
-RUN composer install --prefer-dist --no-autoloader --no-progress --no-interaction --no-scripts --no-cache
-
+# Copier tout le projet (y compris les fichiers de configuration)
 COPY . .
 
+# Installation des dépendances via Composer
+RUN composer install --no-interaction --no-progress --prefer-dist
+
+# Copier le fichier de configuration Apache
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
+# Assurer que les permissions sont correctes
 RUN chown -R www-data:www-data /var/www/safebase
 
 # Passer à l'utilisateur www-data pour exécuter Apache
