@@ -58,10 +58,9 @@ services:
       BACKUP_DATABASE_URL: postgresql://${BACKUP_USER}:${BACKUP_PASSWORD}@backup:5432/${BACKUP_DB}
     entrypoint: >
       sh -c "
-        echo '⏳ Attente des bases de données...' &&
-        sleep 5 &&
-        php bin/console doctrine:database:create --if-not-exists --connection=default &&
-        php bin/console doctrine:database:create --if-not-exists --connection=backup &&
+        echo '⏳ Attente que la base de données soit prête...' &&
+        wait-for-it database:5432 --timeout=30 -- php bin/console doctrine:database:create --if-not-exists --connection=default &&
+        wait-for-it backup:5432 --timeout=30 -- php bin/console doctrine:database:create --if-not-exists --connection=backup &&
         php bin/console doctrine:migrations:migrate --no-interaction &&
         php bin/console doctrine:fixtures:load --no-interaction
       "
