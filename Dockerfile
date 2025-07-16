@@ -14,6 +14,8 @@ RUN apt-get update \
        zip \
        unzip \
        postgresql-client \
+       nodejs \
+       npm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -23,8 +25,8 @@ RUN docker-php-ext-configure intl && docker-php-ext-install pdo pdo_pgsql intl
 # Installation de Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Générer les fichiers CSS via Tailwind (utilisation de Symfony)
-RUN php bin/console tailwind:build
+# Installer pnpm
+RUN npm install -g pnpm
 
 # Définir le répertoire de travail
 WORKDIR /var/www/safebase
@@ -32,8 +34,11 @@ WORKDIR /var/www/safebase
 # Copier tout le projet (y compris les fichiers de configuration)
 COPY . .
 
-# Installation des dépendances via Composer
+# Installer les dépendances via Composer
 RUN composer install --no-interaction --no-progress --prefer-dist
+
+# Générer les fichiers CSS via Tailwind (utilisation de Symfony)
+RUN php bin/console tailwind:build
 
 # Copier le fichier de configuration Apache
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
